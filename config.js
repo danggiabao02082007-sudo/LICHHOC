@@ -1,0 +1,2 @@
+// Cấu hình app: địa chỉ project Supabase + khóa anon (khóa CÔNG KHAI, được bảo vệ bằng RLS). Để trống = app hiện hướng dẫn cài đặt.
+window.APP_CONFIG = { SUPABASE_URL: 'https://zhildgfcbghjebjapibr.supabase.co', SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaWxkZ2ZjYmdoamViamFwaWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU3MDAxMTQsImV4cCI6MjExMTI3NjExNH0.HrLvccW-64-7oDYPt93cmlNupEo3x1LzSBpeqlGM3Rk' };
