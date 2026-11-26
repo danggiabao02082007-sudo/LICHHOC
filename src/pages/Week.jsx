@@ -17,7 +17,7 @@ export default function Week({ go }) {
   const periods = S.settings.periods, rows = snap.rows, today = iso();
   const days = [0, 1, 2, 3, 4, 5, 6].map(i => addDays(mon, i));
   const per = days.map(d => classesOn(rows, d));
-  const maxP = Math.max(10, ...rows.map(c => c.p2 || c.p1 || 0));
+  const maxP = Math.max(10, ...rows.map(c => Math.ceil(c.p2 || c.p1 || 0)));
   const showSun = per[6].length > 0, cols = showSun ? 7 : 6;
   const noDates = rows.every(c => !c.start);
   const exportIcs = () => {
@@ -51,7 +51,7 @@ export default function Week({ go }) {
             <button key={i + '-' + j} onClick={() => setOpen(c)} title={c.name}
               className={cx('rounded-xl p-1.5 text-left text-white text-xs bg-gradient-to-br overflow-hidden shadow hover:brightness-110', colorOf(c.code || c.name),
                 days[i] < today && 'opacity-50', days[i] === today && classState(c, periods, list) === 'now' && 'ring-4 ring-amber-300')}
-              style={{ gridColumn: i + 2, gridRow: `${(c.p1 || 1) + 1} / span ${Math.max(1, (c.p2 || c.p1 || 1) - (c.p1 || 1) + 1)}` }}>
+              style={{ gridColumn: i + 2, gridRow: `${Math.floor(c.p1 || 1) + 1} / span ${Math.max(1, Math.ceil(c.p2 || c.p1 || 1) - Math.floor(c.p1 || 1) + 1)}` }}>
               <div className="font-bold leading-tight line-clamp-2">{c.name || c.code}</div>
               {c.room && <div className="font-extrabold mt-0.5">📍 {c.room}</div>}
               <div className="opacity-90">{timeOf(c, periods).start}{timeOf(c, periods).end && `–${timeOf(c, periods).end}`}</div>

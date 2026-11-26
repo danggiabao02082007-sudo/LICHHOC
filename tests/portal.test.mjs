@@ -86,5 +86,27 @@ const N = noticesFromLinks([{ text: 'Thông báo lịch thi cuối kỳ học k�
   { text: 'Đăng xuất', href: '/Logout.aspx' }, { text: 'Trang chủ', href: '/' }]);
 eq(N.map(x => [x.title.slice(0, 25), x.date]), [['Thông báo lịch thi cuối k', '2026-11-25']], 'Lấy tin, bỏ liên kết menu, đọc ngày');
 
+
+// ---- Bảng thật của new-portal4 (ảnh chụp 26/11/2026): "Danh sách môn học đã được duyệt", cột Lịch Học gộp ----
+{
+  const real = { headers: ['Mã MH', 'Tên Môn Học', 'Lớp/Nhóm', 'Loại', 'Lịch Học'], rows: [
+    ['BAA00006', 'Tâm lý đại cương', '25_4', '', 'T6(3.5-5)-P.cs2:F202'],
+    ['BAA00030', '', '1', '', ''],
+    ['BAA00103', 'Chủ nghĩa xã hội khoa học', '25CBD1', '', 'T7(6-9)-P.cs2:E106'],
+    ['PHY00004', 'Vật lý hiện đại (Lượng tử-Nguyên tử-Hạt nhân)', '25VLH2', '', 'T5(1-4)-P.cs2:NĐH6.8'],
+    ['PHY10001', 'Hàm phức', '25VLH2', '', 'T4(8.5-10)-P.cs2:E309'],
+    ['PHY10002', 'Thực hành vật lý cơ sở', '25VLH2A', '', 'T4(1-5)-P.cs2:TNLCS_G22'],
+    ['PHY10005', 'Điện tử cơ bản', '25VLH2/25VLH2A', '', 'T3(3.5-5)-P.cs2:NĐH7.9']] };
+  ok(classify(real, 'Danh sách môn học đã được duyệt') === 'tkb', 'Portal thật: nhận ra bảng "Danh sách môn học đã được duyệt" là TKB');
+  const R = normalize('tkb', real);
+  eq(R.length, 6, 'Portal thật: 6 buổi (bỏ dòng BAA00030 không có lịch)');
+  eq([R[0].code, R[0].day, R[0].p1, R[0].p2, R[0].room, R[0].group], ['BAA00006', 6, 3.5, 5, 'F202 · CS2', '25_4'], 'Portal thật: T6(3.5-5)-P.cs2:F202');
+  eq([R[2].room, R[4].room], ['NĐH6.8', 'TNLCS_G22'].map(x => x + ' · CS2'), 'Portal thật: phòng có dấu chấm, gạch dưới, chữ Đ');
+  const two = normalize('tkb', { headers: real.headers, rows: [['X1', 'Môn 2 buổi', 'A', '', 'T2(1-3)-P.cs1:E201; T5(4-5)-P.cs1:F102']] });
+  eq(two.map(x => [x.day, x.p1, x.p2, x.room]), [[2, 1, 3, 'E201 · CS1'], [5, 4, 5, 'F102 · CS1']], 'Một môn nhiều buổi trong cùng ô');
+}
+const { timeOf } = await import('../src/lib/time.js');
+const PER = [['07:30', '08:20'], ['08:20', '09:10'], ['09:10', '10:00'], ['10:10', '11:00'], ['11:00', '11:50']];
+eq(timeOf({ p1: 3.5, p2: 5 }, PER), { start: '09:35', end: '11:50' }, 'Tiết lẻ 3.5 = giữa tiết 3');
 console.log(`\nKẾT QUẢ: ${pass} đạt, ${fail} lỗi`);
 process.exit(fail ? 1 : 0);

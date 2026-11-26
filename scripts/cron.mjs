@@ -62,7 +62,9 @@ export function dueReminders(p, now = new Date()) {
   if ((s.remind_class_min ?? 30) > 0) for (const c of p.tkb || []) {
     if (!c.p1 || c.day !== dow(v)) continue;
     if ((c.start && today < c.start) || (c.end && today > c.end)) continue;
-    const t = periods[c.p1 - 1]?.[0]; if (!t) continue;
+    const pi = Math.floor(c.p1), pf = c.p1 - pi, pr = periods[pi - 1];   // tiết lẻ 3.5 = giữa tiết 3
+    let t = pr?.[0]; if (t && pf && pr[1]) { const m0 = +t.slice(0, 2) * 60 + +t.slice(3, 5), m1 = +pr[1].slice(0, 2) * 60 + +pr[1].slice(3, 5), m = Math.round(m0 + pf * (m1 - m0)); t = `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; }
+    if (!t) continue;
     const at = atVN(today, t), dt = at - now;
     if (dt >= 0 && dt <= win) push(`class|${today}|${c.code || c.name}|${c.p1}`, `Sắp vào học lúc ${t}`, `${c.name || c.code}${c.room ? ` · phòng ${c.room}` : ''} · tiết ${c.p1}${c.p2 && c.p2 !== c.p1 ? '-' + c.p2 : ''}`);
   }

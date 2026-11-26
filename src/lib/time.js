@@ -20,15 +20,23 @@ export const daysUntil = s => Math.round((fromIso(s) - fromIso(iso())) / 864e5);
 export const untilText = s => { const n = daysUntil(s); return n === 0 ? 'Hôm nay' : n === 1 ? 'Ngày mai' : n === 2 ? 'Ngày kia' : n > 0 ? `Còn ${n} ngày` : `${-n} ngày trước`; };
 
 /** Giờ bắt đầu/kết thúc của buổi học theo bảng tiết */
+const toMin = hhmm => { const [h, m] = (hhmm || '0:0').split(':').map(Number); return h * 60 + m; };
+/** Giờ tại tiết p (p có thể lẻ: 3.5 = giữa tiết 3). edge 0 = đầu, 1 = cuối tiết nguyên */
+export function periodAt(periods, p, edge) {
+  const i = Math.floor(p), f = p - i, r = periods?.[i - 1]; if (!r) return '';
+  if (!f) return r[edge] || '';
+  if (!r[0] || !r[1]) return '';
+  const m = Math.round(toMin(r[0]) + f * (toMin(r[1]) - toMin(r[0])));
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+}
 export function timeOf(c, periods) {
-  const a = periods?.[c.p1 - 1]?.[0], b = periods?.[(c.p2 || c.p1) - 1]?.[1];
-  return { start: a || '', end: b || '' };
+  if (!c.p1) return { start: '', end: '' };
+  return { start: periodAt(periods, c.p1, 0), end: periodAt(periods, c.p2 || c.p1, 1) };
 }
 /** Buổi học có diễn ra vào ngày `s` không (đúng thứ + trong khoảng ngày học nếu có) */
 export const meetsOn = (c, s) => c.day === dowOf(s) && (!c.start || s >= c.start) && (!c.end || s <= c.end);
 /** Các buổi học trong ngày, sắp theo tiết */
 export const classesOn = (rows, s) => (rows || []).filter(c => meetsOn(c, s)).sort((a, b) => (a.p1 || 0) - (b.p1 || 0));
-const toMin = hhmm => { const [h, m] = (hhmm || '0:0').split(':').map(Number); return h * 60 + m; };
 export const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
 /** Trạng thái buổi học hôm nay: 'past' | 'now' | 'next' | 'later' */
 export function classState(c, periods, list) {

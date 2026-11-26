@@ -20,6 +20,7 @@ const COLS = {
   name: ['ten mon hoc', 'ten mh', 'ten hoc phan', 'ten mon', 'mon hoc', 'hoc phan', 'ten'],
   credits: ['so tin chi', 'so tc', 'tin chi', 'stc', 'tc'],
   type: ['loai', 'ly thuyet/thuc hanh', 'lt/th', 'hinh thuc hoc'],
+  schedule: ['lich hoc'],          // portal new-portal4: một ô "T6(3.5-5)-P.cs2:F202"
   day: ['thu'],
   periods: ['tiet'],
   room: ['phong hoc', 'phong'],
@@ -61,6 +62,7 @@ export function classify(table, pageText = '') {
   if (isGrid(table.headers)) return 'tkb';
   const has = k => H.includes(k);
   if (has('ngay thi') || has('phong thi') || has('gio thi') || has('ca thi') || has('so bao danh') || (has('sbd') && has('ngay'))) return 'lichthi';
+  if (has('lich hoc') && (has('mon') || has('ma mh') || has('hoc phan'))) return 'tkb';
   if ((has('diem') || has('ket qua')) && (has('mon') || has('hoc phan')) && !has('tiet')) return 'diem';
   if ((has('thu') && (has('tiet') || has('phong'))) || (has('tiet') && (has('mon') || has('hoc phan')))) return 'tkb';
   if (P.includes('lich thi') && (has('ngay') || has('phong'))) return 'lichthi';
@@ -106,13 +108,30 @@ function baseRow(headers, row) {
   return raw;
 }
 
+/** "T6(3.5-5)-P.cs2:F202; T2(1-3)-P.cs1:E201" → [{day, p1, p2, room, campus}] (tiết có thể lẻ .5) */
+export function parseSchedule(s) {
+  const out = [], re = /\bT\s*([2-8]|CN)\s*\(\s*(\d+(?:[.,]\d+)?)\s*(?:-|–|->)\s*(\d+(?:[.,]\d+)?)\s*\)(?:\s*-\s*P\.?\s*(?:(cs\s*\d+)\s*:\s*)?([^\s;,|]+))?/gi;
+  for (const m of String(s || '').matchAll(re)) {
+    const campus = (m[4] || '').replace(/\s/g, '').toUpperCase();
+    out.push({ day: /cn/i.test(m[1]) ? 8 : +m[1], p1: +m[2].replace(',', '.'), p2: +m[3].replace(',', '.'), room: m[5] ? m[5] + (campus ? ` · ${campus}` : '') : '' });
+  }
+  return out;
+}
+
 function normTkbList(t) {
   const H = t.headers, used = new Set(), col = k => { const i = pickCol(H, COLS[k], used); if (i >= 0) used.add(i); return i; };
+  const sch = col('schedule');
   const c = { code: col('code'), name: col('name'), group: col('group'), credits: col('credits'), type: col('type'), day: col('day'), periods: col('periods'),
     room: col('room'), start: col('start'), end: col('end'), dates: col('dates'), teacher: col('teacher') };
   const out = [];
   for (const r of t.rows) {
     const g = i => i >= 0 ? clean(r[i]) : '';
+    if (sch >= 0) {                                                  // dạng gộp: mỗi buổi "T<thứ>(<tiết>-<tiết>)-P.<cơ sở>:<phòng>"
+      const base = { code: g(c.code), name: g(c.name), group: g(c.group), credits: num(g(c.credits)), type: g(c.type), start: parseDate(g(c.start)), end: parseDate(g(c.end)), teacher: g(c.teacher), raw: baseRow(H, r) };
+      if (!base.name && !base.code) continue;
+      for (const s of parseSchedule(g(sch))) out.push({ ...base, ...s });
+      continue;
+    }
     // Một ô có thể chứa nhiều buổi xuống dòng: "Thứ 2\nThứ 5" + "1-3\n4-6" + "E201\nF102"
     const days = g(c.day).split('\n'), pers = g(c.periods).split('\n'), rooms = g(c.room).split('\n');
     const n = Math.max(days.length, pers.length, 1);
