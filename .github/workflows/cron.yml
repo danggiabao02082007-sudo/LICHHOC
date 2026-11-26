@@ -1,0 +1,28 @@
+# Mỗi 30 phút: đọc tin trường/khoa, nhắc giờ học/thi/hạn nộp, gửi thông báo đẩy.
+# Repo công khai → nhật ký chỉ in số lượng. Khóa bí mật nằm trong Settings → Secrets and variables → Actions.
+name: Dong bo tin va nhac lich
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cron
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save --no-audit --no-fund --ignore-scripts web-push@3.6.7
+      - run: node scripts/cron.mjs
+        env:
+          SB_URL: ${{ secrets.SB_URL }}
+          SB_ANON: ${{ secrets.SB_ANON }}
+          CRON_KEY: ${{ secrets.CRON_KEY }}
+          APP_URL: https://danggiabao02082007-sudo.github.io/lichhoc/
