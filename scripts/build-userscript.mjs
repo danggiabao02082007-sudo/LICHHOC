@@ -2,10 +2,10 @@
 import { build } from 'esbuild';
 import { readFileSync, mkdirSync } from 'node:fs';
 const ver = JSON.parse(readFileSync('package.json', 'utf8')).version;
-const URL = 'https://danggiabao02082007-sudo.github.io/lichhoc/lichhoc.user.js';
+const URL = 'https://danggiabao02082007-sudo.github.io/LICHHOC/lichhoc.user.js';
 const banner = `// ==UserScript==
 // @name         LICHHOC – Đồng bộ portal HCMUS
-// @namespace    https://danggiabao02082007-sudo.github.io/lichhoc/
+// @namespace    https://danggiabao02082007-sudo.github.io/LICHHOC/
 // @version      ${ver}
 // @description  Khi bạn đã đăng nhập portal HCMUS: tự đọc thời khóa biểu, lịch thi, kết quả học tập, thông báo và gửi về app LICHHOC của bạn. Không đọc mật khẩu.
 // @match        https://new-portal2.hcmus.edu.vn/*

@@ -75,6 +75,7 @@ eq(diff('tkb', T, JSON.parse(JSON.stringify(T))), [], 'Không đổi → không 
 const E2 = JSON.parse(JSON.stringify(E)); E2[0].date = '2027-01-06'; E2[0].room = 'E302';
 c = diff('lichthi', E, E2); eq(c.map(x => x.type), ['change'], 'Đổi ngày + phòng thi → 1 thay đổi');
 ok(c[0].detail[0].includes('05/01/2027') && c[0].detail[1].includes('06/01/2027'), 'Ghi ngày thi cũ → mới');
+{ const P = E.map(x => ({ ...x, group: '', form: '', room: x.room + 'X' })); const d = diff('lichthi', E, P); eq(d.map(x => x.type), E.map(() => 'change'), 'Dán tay thiếu cột nhóm/hình thức vẫn khớp đúng môn'); }
 c = diff('lichthi', E.slice(0, 1), E); eq(c.map(x => x.type), ['add'], 'Có lịch thi mới');
 const D2 = JSON.parse(JSON.stringify(D)); D2[3].grade = 6.5; D2[0].grade = 8;
 c = diff('diem', D, D2); eq(c.map(x => x.type), ['grade', 'grade'], 'Điểm thay đổi + có điểm mới');

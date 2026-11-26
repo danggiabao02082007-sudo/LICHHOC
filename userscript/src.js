@@ -2,7 +2,7 @@
 // Không đọc/lưu mật khẩu. Chỉ đọc nội dung trang bạn đang xem + các trang TKB/lịch thi/điểm/thông báo trong cùng phiên.
 import { extract, detectTerm, diff, hashRows, noticesFromLinks, norm } from '../src/lib/portal.js';
 
-const APP = 'https://danggiabao02082007-sudo.github.io/lichhoc/';
+const APP = 'https://danggiabao02082007-sudo.github.io/LICHHOC/';
 const AUTO_EVERY = 3 * 3600e3;                 // tự quét các trang tối đa 3 giờ/lần
 const PAGES = /th[oờ]i kh[oó]a bi[eể]u|l[iị]ch thi|k[eế]t qu[aả] h[oọ]c t[aậ]p|b[aả]ng [đd]i[eể]m|tra c[uứ]u [đd]i[eể]m|th[oô]ng b[aá]o/i;
 
@@ -21,7 +21,17 @@ function api(fn, args) {
 }
 
 // ---------- Đọc 1 trang ----------
-const cellText = td => (td.innerText ?? td.textContent ?? '').replace(/ /g, ' ').trim();
+// Trang tải ngầm (DOMParser) không được hiển thị nên innerText không giữ <br>: tự đọc chữ, <br>/khối → xuống dòng
+const BLOCK = /^(DIV|P|LI|TR|H\d)$/;
+const cellText = td => {
+  let s = '';
+  const walk = n => { for (const c of n.childNodes) {
+    if (c.nodeType === 3) s += c.nodeValue.replace(/\s+/g, ' ');
+    else if (c.nodeType === 1) { if (c.tagName === 'BR') { s += '\n'; continue; } if (/^(SCRIPT|STYLE)$/.test(c.tagName)) continue;
+      const b = BLOCK.test(c.tagName); if (b && s && !s.endsWith('\n')) s += '\n'; walk(c); if (b && !s.endsWith('\n')) s += '\n'; } } };
+  walk(td);
+  return s.replace(/\u00a0/g, ' ').split('\n').map(l => l.trim()).filter(Boolean).join('\n');
+};
 function tablesOf(doc) {
   const out = [];
   for (const t of doc.querySelectorAll('table')) {

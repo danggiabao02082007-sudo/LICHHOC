@@ -25,4 +25,4 @@ jobs:
           SB_URL: ${{ secrets.SB_URL }}
           SB_ANON: ${{ secrets.SB_ANON }}
           CRON_KEY: ${{ secrets.CRON_KEY }}
-          APP_URL: https://danggiabao02082007-sudo.github.io/lichhoc/
+          APP_URL: https://danggiabao02082007-sudo.github.io/LICHHOC/

@@ -7,7 +7,7 @@
 // Thiếu cấu hình Supabase → chạy thử phần đọc tin rồi dừng (không lỗi).
 // =====================================================================
 const { SB_URL, SB_ANON, CRON_KEY, VAPID_PUBLIC, VAPID_PRIVATE } = process.env;
-const APP_URL = process.env.APP_URL || 'https://danggiabao02082007-sudo.github.io/lichhoc/';
+const APP_URL = process.env.APP_URL || 'https://danggiabao02082007-sudo.github.io/LICHHOC/';
 const UA = 'Mozilla/5.0 (compatible; LichHocBot/1.0; +' + APP_URL + ')';
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 

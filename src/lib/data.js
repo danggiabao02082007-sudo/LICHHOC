@@ -1,6 +1,7 @@
 // Dữ liệu học tập dùng chung cho các trang (tải 1 lần, tải lại khi đồng bộ xong)
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase, q } from './supabase.js';
+import { norm as normKey } from './portal.js';
 export const StudyCtx = createContext(null);
 export const useStudy = () => useContext(StudyCtx);
 
@@ -24,7 +25,11 @@ export function useStudyLoader(enabled) {
       const L = latest(snaps), data = settings.data;
       const terms = [...new Set(L.map(s => s.term))].sort().reverse();
       const pick = (kind, term) => (L.find(s => s.kind === kind && s.term === (term ?? data.current_term)) || L.filter(s => s.kind === kind).sort((a, b) => b.captured_at.localeCompare(a.captured_at))[0]) || null;
-      const allGrades = L.filter(s => s.kind === 'diem').flatMap(s => s.rows.map(r => ({ ...r, term: r.term || s.term })));
+      // Điểm: gộp mọi học kỳ; một môn (cùng mã, cùng học kỳ) chỉ lấy bản đồng bộ mới nhất
+      const gm = new Map();
+      for (const s of L.filter(s => s.kind === 'diem').sort((a, b) => a.captured_at.localeCompare(b.captured_at)))
+        for (const r of s.rows) { const row = { ...r, term: r.term || s.term }; gm.set(normKey(row.code || row.name) + '|' + row.term, row); }
+      const allGrades = [...gm.values()];
       setSt({ loading: false, error: null, snaps: L, settings: data, terms, pick, allGrades, unseenChanges: unseenC.count || 0, unseenNotices: unseenN.count || 0, status: status.data || {} });
     } catch (e) { setSt(s => ({ ...s, loading: false, error: e.message })); }
   }, [enabled]);

@@ -273,9 +273,14 @@ export function diff(kind, oldRows, newRows) {
   } else if (kind === 'lichthi') {
     const key = x => norm(x.code || x.name) + '|' + norm(x.group) + '|' + norm(x.form);
     const mOld = Object.fromEntries(oldRows.map(x => [key(x), x]));
+    // Nguồn khác nhau (portal / dán tay) có thể thiếu cột nhóm, hình thức → nếu không khớp đủ, khớp theo mã môn khi mã chỉ có 1 lịch thi
+    const ck = x => norm(x.code || x.name), cnt = a => a.reduce((m, x) => (m[ck(x)] = (m[ck(x)] || 0) + 1, m), {});
+    const cOld = cnt(oldRows), cNew = cnt(newRows);
     const seenK = new Set();
     for (const x of newRows) {
-      const k = key(x); seenK.add(k); const o = mOld[k];
+      let k = key(x);
+      if (!mOld[k] && cNew[ck(x)] === 1 && cOld[ck(x)] === 1) k = key(oldRows.find(y => ck(y) === ck(x)));
+      seenK.add(k); const o = mOld[k];
       const desc = y => [fmtD(y.date), y.time || y.timeText, y.room ? `phòng ${y.room}` : ''].filter(Boolean).join(', ');
       if (!o) ch.push({ type: 'add', title: `Có lịch thi mới: ${label(x)}`, detail: [desc(x)] });
       else if (S(o.date) !== S(x.date) || S(o.time || o.timeText) !== S(x.time || x.timeText) || norm(o.room) !== norm(x.room) || S(o.seat) !== S(x.seat))
