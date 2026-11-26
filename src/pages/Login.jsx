@@ -15,8 +15,9 @@ export default function Login() {
     if (mode === 'signup' && pw !== pw2) return setErr('Hai lần nhập mật khẩu không giống nhau');
     if (mode === 'signup' && pw.length < 8) return setErr('Mật khẩu cần ít nhất 8 ký tự');
     setBusy(true);
-    const { error } = mode === 'login' ? await supabase.auth.signInWithPassword({ email: email.trim(), password: pw })
-      : await supabase.auth.signUp({ email: email.trim(), password: pw });
+    const { data, error } = mode === 'login' ? await supabase.auth.signInWithPassword({ email: email.trim(), password: pw })
+      : await supabase.auth.signUp({ email: email.trim(), password: pw, options: { emailRedirectTo: location.origin + location.pathname } });
+    if (!error && mode === 'signup' && !data.session) { setBusy(false); setMode('login'); return setErr('📧 Đã tạo tài khoản. Mở email, bấm link xác nhận (xem cả thư rác), rồi đăng nhập tại đây.'); }
     if (error) setErr(error.message === 'Invalid login credentials' ? 'Sai email hoặc mật khẩu'
       : /Database error saving new user|đã có chủ/i.test(error.message) ? 'App đã có chủ rồi. Hãy đăng nhập bằng tài khoản đã tạo.' : error.message);
     setBusy(false);

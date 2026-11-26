@@ -32,9 +32,11 @@ export const MENU = [
 ];
 const MOBILE = ['today', 'week', 'exams', 'notices'];
 
+// Link xác nhận email trả về #access_token=… → không phải tên trang
+const pageOf = () => { const h = location.hash.slice(1); return MENU.some(m => m[0] === h || m.id === h) ? h : 'today'; };
 export default function App() {
   const [session, setSession] = useState(undefined);
-  const [page, setPage] = useState(() => location.hash.slice(1) || 'today');
+  const [page, setPage] = useState(() => pageOf());
   const [more, setMore] = useState(false);
   const [mini, setMini] = useState(() => { try { return localStorage.getItem('lichhoc.sidebar') === 'mini'; } catch { return false; } });
   const toggleMini = () => setMini(v => { try { localStorage.setItem('lichhoc.sidebar', v ? 'full' : 'mini'); } catch { /* bỏ qua */ } return !v; });
@@ -47,7 +49,7 @@ export default function App() {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
     return () => sub.subscription.unsubscribe();
   }, []);
-  useEffect(() => { const h = () => setPage(location.hash.slice(1) || 'today'); addEventListener('hashchange', h); return () => removeEventListener('hashchange', h); }, []);
+  useEffect(() => { const h = () => setPage(pageOf()); addEventListener('hashchange', h); return () => removeEventListener('hashchange', h); }, []);
   // mở app từ thông báo / quay lại app → tải lại dữ liệu
   useEffect(() => { const h = () => document.visibilityState === 'visible' && session && study.reload(); document.addEventListener('visibilitychange', h); return () => document.removeEventListener('visibilitychange', h); }, [session, study.reload]);
   const go = id => { location.hash = id; setMore(false); scrollTo(0, 0); };
