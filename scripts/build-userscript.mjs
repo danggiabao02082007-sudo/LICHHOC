@@ -8,8 +8,7 @@ const banner = `// ==UserScript==
 // @namespace    https://danggiabao02082007-sudo.github.io/LICHHOC/
 // @version      ${ver}
 // @description  Khi bạn đã đăng nhập portal HCMUS: tự đọc thời khóa biểu, lịch thi, kết quả học tập, thông báo và gửi về app LICHHOC của bạn. Không đọc mật khẩu.
-// @match        https://new-portal2.hcmus.edu.vn/*
-// @match        https://portal.hcmus.edu.vn/*
+// @match        https://*.hcmus.edu.vn/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue

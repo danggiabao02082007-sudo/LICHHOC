@@ -83,19 +83,29 @@ async function sync(pages, source = 'userscript') {
   return { ...r, found: items.map(i => `${{ tkb: 'TKB', lichthi: 'Lịch thi', diem: 'Điểm' }[i.kind]}${i.term ? ' ' + i.term : ''} (${i.rows.length})`), nNotices: notices.length, unknown };
 }
 
+// Trang mục lục (vd Dashboard → "Quản Lý Học Tập") chứa link tới TKB, lịch thi, điểm → đọc thêm 1 tầng
+const HUB = /qu[aả]n l[yý] h[oọ]c t[aậ]p|h[oọ]c t[aậ]p|sinh vi[eê]n|tra c[uứ]u|k[eế]t qu[aả]/i;
+const linksOf = (doc, base, re) => [...doc.querySelectorAll('a[href]')]
+  .filter(a => a.textContent.trim().length <= 40 && re.test(a.textContent + ' ' + (a.title || '') + ' ' + (a.querySelector('img')?.alt || '')) && !/^(javascript:|#|mailto:)|logout|dang ?xuat|logoff/i.test(a.getAttribute('href').trim()))
+  .map(a => new URL(a.getAttribute('href'), base)).filter(u => u.origin === location.origin);
 async function crawl() {
-  const pages = [readDoc(document, location.href)];
-  const links = [...document.querySelectorAll('a[href]')].filter(a => PAGES.test(a.textContent) && !/javascript:|logout|dang ?xuat/i.test(a.getAttribute('href')))
-    .map(a => new URL(a.getAttribute('href'), location.href)).filter(u => u.origin === location.origin && u.href !== location.href);
-  const uniq = [...new Map(links.map(u => [u.pathname + u.search, u])).values()].slice(0, 8);
-  for (const u of uniq) {
+  const pages = [readDoc(document, location.href)], seen = new Set([location.pathname + location.search]);
+  const get = async u => {
+    const k = u.pathname + u.search; if (seen.has(k) || seen.size > 14) return null; seen.add(k);
     try {
-      const r = await fetch(u.href, { credentials: 'include' }); if (!r.ok || /Login\.aspx/i.test(r.url)) continue;
+      const r = await fetch(u.href, { credentials: 'include' }); if (!r.ok || /Login\.aspx/i.test(r.url)) return null;
       const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
-      pages.push(readDoc(doc, u.href));
       await new Promise(x => setTimeout(x, 800));                       // nhẹ nhàng với máy chủ trường
-    } catch { /* bỏ qua trang lỗi */ }
+      return doc;
+    } catch { return null; }
+  };
+  const targets = linksOf(document, location.href, PAGES);
+  for (const u of linksOf(document, location.href, HUB).slice(0, 4)) {
+    const d = await get(u); if (!d) continue;
+    pages.push(readDoc(d, u.href)); targets.push(...linksOf(d, u.href, PAGES));
   }
+  for (const u of targets) { const d = await get(u); if (d) pages.push(readDoc(d, u.href)); }
+  pages.visited = seen.size;
   return pages;
 }
 
@@ -140,7 +150,7 @@ async function run(force) {
     const pages = auto ? await crawl() : [readDoc(document, location.href)];
     if (auto) set('lastCrawl', Date.now());
     const r = await sync(pages);
-    const text = `${r.found.length ? r.found.join(', ') : 'Không thấy bảng TKB/lịch thi/điểm'}${r.nNotices ? ` · ${r.nNotices} thông báo` : ''}` +
+    const text = `${pages.visited ? `Đọc ${pages.visited} trang · ` : ''}${r.found.length ? r.found.join(', ') : 'Không thấy bảng TKB/lịch thi/điểm — hãy mở trang TKB / lịch thi / điểm rồi bấm Đồng bộ ngay'}${r.nNotices ? ` · ${r.nNotices} thông báo` : ''}` +
       `${r.changes ? ` · 🔔 ${r.changes} thay đổi` : ''}${r.notices ? ` · ${r.notices} thông báo mới` : ''}${r.unknown.length ? ` · ${r.unknown.length} bảng chưa nhận dạng` : ''}`;
     set('last', { at: Date.now(), text });
     status(r.changes || r.notices ? `📚 🔔 ${r.changes + r.notices} mới` : '📚 LICHHOC ✓');
@@ -148,4 +158,5 @@ async function run(force) {
   } catch (e) { status('📚 Lỗi đồng bộ'); card.style.display = 'block'; render('❌ ' + esc(e.message)); }
 }
 
-if (!/Login\.aspx/i.test(location.pathname)) { ui(); run(false); }
+// Chỉ chạy trên portal sinh viên (new-portal2, new-portal4, … đều được), bỏ trang đăng nhập
+if ((window.__LH_TEST__ || /^(new-)?portal\d*\.hcmus\.edu\.vn$/i.test(location.hostname)) && !/Login\.aspx/i.test(location.pathname)) { ui(); run(false); }

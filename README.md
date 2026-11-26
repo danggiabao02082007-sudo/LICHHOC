@@ -8,7 +8,7 @@ Link app: https://danggiabao02082007-sudo.github.io/LICHHOC/
 
 | Nguồn | Cách lấy | Tần suất |
 |---|---|---|
-| Portal sinh viên (TKB, lịch thi, điểm, thông báo portal) | Tiện ích **Tampermonkey** chạy trong trình duyệt khi bạn đã đăng nhập portal; hoặc **dán tay** ở mục Đồng bộ | Mỗi lần mở portal (tự quét tối đa 3 giờ/lần) hoặc bấm "Đồng bộ ngay" |
+| Portal sinh viên new-portal4 (TKB, lịch thi, điểm, thông báo portal) | Tiện ích **Tampermonkey** chạy trong trình duyệt khi bạn đã đăng nhập portal; hoặc **dán tay** ở mục Đồng bộ | Mỗi lần mở portal (tự quét tối đa 3 giờ/lần) hoặc bấm "Đồng bộ ngay" |
 | Tin trường (hcmus.edu.vn) | Máy chạy ngầm GitHub Actions | 30 phút |
 | Tin Khoa Vật lý – Vật lý kỹ thuật (phys.hcmus.edu.vn) | Máy chạy ngầm GitHub Actions | 30 phút |
 | Nhắc giờ học, giờ thi, hạn nộp; thông báo thay đổi | Máy chạy ngầm gửi thông báo đẩy | 30 phút |

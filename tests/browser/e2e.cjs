@@ -11,15 +11,15 @@ const serve = (root, port, cfg) => http.createServer((q, r) => {
   fs.readFile(p, (e, d) => { if (e) { r.writeHead(404); r.end(); } else { r.writeHead(200, { 'content-type': T[path.extname(p)] || 'text/plain' }); r.end(d); } });
 }).listen(port);
 let room = 'E201';
-const portal = http.createServer((q, r) => { const pages = require('../fixtures/portal/layout.cjs')(room); const k = q.url.split('?')[0].replace(/^\//, '');
+const portal = http.createServer((q, r) => { const pages = require('../fixtures/portal/layout.cjs')(room); const k0 = q.url.replace(/^\//, ''), k = pages[k0] ? k0 : k0.split('?')[0];
   if (pages[k]) { r.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); r.end(pages[k]); } else { r.writeHead(404); r.end(); } }).listen(8892);
 const appSrv = serve(dist, 8891, `window.APP_CONFIG={SUPABASE_URL:'${SB}',SUPABASE_ANON_KEY:'${ANON}'};`);
-const bareSrv = serve(dist, 8893);
+const bareSrv = serve(dist, 8893, 'window.APP_CONFIG={};');
 const res = []; const ok = (c, m) => { res.push([c, m]); console.log(c ? '  ✔' : '  ✘', m); };
 const U = 'http://localhost:8891/';
 const userscript = fs.readFileSync(path.join(dist, 'lichhoc.user.js'), 'utf8');
 // Giả lập Tampermonkey: GM_* trên localStorage + GM_xmlhttpRequest bằng fetch
-const gmShim = `window.GM_getValue=(k,d)=>{const v=localStorage.getItem('gm_'+k);return v===null?d:JSON.parse(v)};window.GM_setValue=(k,v)=>localStorage.setItem('gm_'+k,JSON.stringify(v));
+const gmShim = `window.__LH_TEST__=1;window.GM_getValue=(k,d)=>{const v=localStorage.getItem('gm_'+k);return v===null?d:JSON.parse(v)};window.GM_setValue=(k,v)=>localStorage.setItem('gm_'+k,JSON.stringify(v));
 window.GM_xmlhttpRequest=o=>fetch(o.url,{method:o.method,headers:o.headers,body:o.data}).then(async r=>o.onload({status:r.status,responseText:await r.text()})).catch(()=>o.onerror&&o.onerror());`;
 
 (async () => {

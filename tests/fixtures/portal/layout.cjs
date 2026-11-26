@@ -1,11 +1,15 @@
 // Sinh các trang portal giả lập (kiểu ASP.NET WebForms + GridView) để thử tiện ích
-const menu = `<div id="menu"><a href="Default.aspx">Trang chủ</a> | <a href="SinhVien/ThoiKhoaBieu.aspx">Thời khóa biểu</a> | <a href="SinhVien/LichThi.aspx">Lịch thi</a>
- | <a href="SinhVien/KetQuaHocTap.aspx">Kết quả học tập</a> | <a href="ThongBao.aspx">Thông báo</a> | <a href="Logout.aspx">Đăng xuất</a></div>`;
+// Giống portal thật (new-portal4): Dashboard chỉ có ô "Quản Lý Học Tập" → trang mục lục mới có link TKB, lịch thi, điểm
+const menu = `<div id="menu"><a href="Default.aspx?pid=62">Dashboard</a> | <a href="Logout.aspx">Đăng xuất</a></div>`;
+const tiles = `<div class="tiles"><a href="Default.aspx?pid=63"><img src="u.png" alt=""><br>User Account</a> <a href="Default.aspx?pid=70"><img src="q.png" alt=""><br>Quản Lý Học Tập</a></div>`;
+const hub = `<ul><li><a href="SinhVien/ThoiKhoaBieu.aspx">Thời khóa biểu</a></li><li><a href="SinhVien/LichThi.aspx">Lịch thi</a></li>
+  <li><a href="SinhVien/KetQuaHocTap.aspx">Kết quả học tập</a></li><li><a href="ThongBao.aspx">Thông báo</a></li></ul>`;
 const page = (title, body) => `<!DOCTYPE html><html><head><meta charset="utf-8"><title>HCMUS Portal - ${title}</title></head><body><form id="aspnetForm">${menu}<h2>${title}</h2>${body}</form></body></html>`;
 const grid = (heads, rows) => `<table class="grid" cellspacing="0" rules="all" border="1" id="ctl00_ContentPlaceHolder1_gvData"><tr>${heads.map(h => `<th scope="col">${h}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</table>`;
 const term = `<select name="ddlHocKy"><option>Học kỳ 2 năm học 2025-2026</option><option selected="selected">Học kỳ 1 năm học 2026-2027</option></select>`;
 module.exports = room => ({
-  'Default.aspx': page('Trang chủ', `<div id="ThongBao"><ul>
+  'Default.aspx?pid=70': page('Quản Lý Học Tập', hub),
+  'Default.aspx': page('Dashboard', tiles + `<div id="ThongBao"><ul>
     <li><a href="ThongBaoChiTiet.aspx?id=101">Thông báo lịch thi cuối kỳ học kỳ 1 năm học 2026-2027</a> <span>(25/11/2026)</span></li>
     <li><a href="ThongBaoChiTiet.aspx?id=100">Thông báo đóng học phí học kỳ 1 năm học 2026-2027</a> <span>(10/11/2026)</span></li></ul></div>`),
   'SinhVien/ThoiKhoaBieu.aspx': page('Thời khóa biểu', term + grid(['STT', 'Mã MH', 'Tên môn học', 'Lớp', 'Số TC', 'Thứ', 'Tiết', 'Phòng', 'Từ ngày', 'Đến ngày', 'Giảng viên'], [
